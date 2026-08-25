@@ -74,7 +74,6 @@ jobs:
           $env:CEREBRO_DIR = $alvo; $env:CEREBRO_CLI = "claude"
           $env:CEREBRO_NO_SHORTCUT = "1"; $env:CEREBRO_NO_LAUNCH = "1"
           .\install.ps1
-          "$alvo" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8 -NoNewline:$false
           Add-Content -Path $env:GITHUB_ENV -Value "CEREBRO_ALVO=$alvo"
 
       - name: A estrutura esta toda la?
