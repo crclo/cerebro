@@ -18,10 +18,23 @@ function Install-Cerebro {
         [string]$Dir = "",
         [string]$Cli = "",
         [switch]$NoShortcut,
-        [switch]$NoLaunch
+        [switch]$NoLaunch,
+        [switch]$Yes
     )
 
     $ErrorActionPreference = "Stop"
+
+    # Rodando por "irm ... | iex" nao da para passar flags. Entao tambem
+    # aceitamos variaveis de ambiente definidas antes da chamada.
+    if (-not $Dir  -and $env:CEREBRO_DIR) { $Dir = $env:CEREBRO_DIR }
+    if (-not $Cli  -and $env:CEREBRO_CLI) { $Cli = $env:CEREBRO_CLI }
+    if ($env:CEREBRO_NO_SHORTCUT -eq "1") { $NoShortcut = $true }
+    if ($env:CEREBRO_NO_LAUNCH   -eq "1") { $NoLaunch   = $true }
+    if ($env:CEREBRO_DRY_RUN     -eq "1") { $DryRun     = $true }
+    if ($env:CEREBRO_YES         -eq "1") { $Yes        = $true }
+
+    # -Yes: aceita todos os padroes sem perguntar nada (usado na automacao)
+    $semPerguntas = [bool]$Yes
     $repoUser   = "crclo"
     $repoName   = "cerebro"
     $repoBranch = "main"
@@ -32,9 +45,14 @@ function Install-Cerebro {
     function Warn($t) { Write-Host "  !   " -ForegroundColor Yellow -NoNewline; Write-Host $t }
     function Err($t)  { Write-Host "  X   " -ForegroundColor Red -NoNewline; Write-Host $t }
     function Step($t) { Write-Host ""; Write-Host ">> $t" -ForegroundColor White }
-    function Pausa    { Write-Host ""; Read-Host "   ... ENTER para continuar" | Out-Null }
+    function Pausa {
+        if ($semPerguntas) { return }
+        Write-Host ""
+        Read-Host "   ... ENTER para continuar" | Out-Null
+    }
 
     function Pergunta($texto, $padrao) {
+        if ($semPerguntas) { Write-Host "$texto [$padrao]"; return $padrao }
         if ($padrao) { $r = Read-Host "$texto [$padrao]" } else { $r = Read-Host $texto }
         if ([string]::IsNullOrWhiteSpace($r)) { return $padrao }
         return $r.Trim()

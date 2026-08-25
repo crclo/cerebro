@@ -81,22 +81,39 @@ then res x "deveria sair com erro"; else res ok "saiu com erro, como esperado"; 
 if grep -q "Nao encontrei nenhum agente" "$SANDBOX/5.log"
 then res ok "explicou qual instalar"; else res x "explicou qual instalar"; fi
 
+# O comando "script" tem sintaxe diferente no GNU (Linux) e no BSD (macOS).
+# Descobrimos qual e o desta maquina para conseguir simular um terminal.
+SABOR_SCRIPT="nenhum"
+if command -v script >/dev/null 2>&1; then
+  if script -qec true /dev/null >/dev/null 2>&1; then SABOR_SCRIPT="gnu"
+  elif script -q /dev/null true  >/dev/null 2>&1; then SABOR_SCRIPT="bsd"
+  fi
+fi
+
+com_tty() {  # com_tty "comando shell" arquivo_de_saida
+  case "$SABOR_SCRIPT" in
+    gnu) script -qec "$1" /dev/null > "$2" 2>&1 ;;
+    bsd) script -q /dev/null /bin/sh -c "$1" > "$2" 2>&1 ;;
+    *)   return 1 ;;
+  esac
+}
+
 echo ""
 echo "== 6. Fluxo interativo com terminal de verdade =="
-if command -v script >/dev/null 2>&1; then
+if [ "$SABOR_SCRIPT" != "nenhum" ]; then
   H4="$(lar h4)"
-  printf '\n1\n1\nCerebro\n\ns\nn\n' | script -qec "env HOME=$H4 bash -c \"$ALVO\"" /dev/null >"$SANDBOX/6.log" 2>&1 || true
+  printf '\n1\n1\nCerebro\n\ns\nn\n' | com_tty "env HOME=$H4 bash -c \"$ALVO\"" "$SANDBOX/6.log" || true
   if [ -f "$H4/Google Drive/Cerebro/CLAUDE.md" ]
   then res ok "instalou respondendo as perguntas"; else res x "instalou respondendo as perguntas"; fi
   if grep -q "agente()" "$H4/.bashrc"
   then res ok "criou o atalho 'agente'"; else res x "criou o atalho 'agente'"; fi
-  printf '\n1\n1\nCerebro\ns\n\ns\nn\n' | script -qec "env HOME=$H4 bash -c \"$ALVO --no-launch\"" /dev/null >/dev/null 2>&1 || true
+  printf '\n1\n1\nCerebro\ns\n\ns\nn\n' | com_tty "env HOME=$H4 bash -c \"$ALVO --no-launch\"" "$SANDBOX/6b.log" || true
   if [ "$(grep -c '>>> cerebro >>>' "$H4/.bashrc")" = "1" ]
   then res ok "nao duplicou o atalho na segunda vez"; else res x "nao duplicou o atalho na segunda vez"; fi
   if ! ls -a "$H4" | grep -q 'cerebro-bak'
   then res ok "nao deixou arquivo de sobra"; else res x "nao deixou arquivo de sobra"; fi
 else
-  echo "  (pulado: o comando 'script' nao existe nesta maquina)"
+  echo "  (pulado: nao ha um comando 'script' utilizavel nesta maquina)"
 fi
 
 echo ""
