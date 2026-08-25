@@ -24,6 +24,7 @@ DRY_RUN=0
 ARG_DIR=""
 ARG_CLI=""
 NO_SHORTCUT=0
+NO_LAUNCH=0
 
 # ------------------------------------------------------------
 # Cores (desligadas quando nao ha terminal)
@@ -102,6 +103,7 @@ while [ $# -gt 0 ]; do
     --dir=*) ARG_DIR="${1#*=}" ;;
     --cli=*) ARG_CLI="${1#*=}" ;;
     --no-shortcut) NO_SHORTCUT=1 ;;
+    --no-launch) NO_LAUNCH=1 ;;
     -h|--help) mostra_ajuda; exit 0 ;;
     *) warn "Opcao ignorada: $1" ;;
   esac
@@ -560,7 +562,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
   exit 0
 fi
 
-if confirma "  Chamo o ${CLI} agora para fazer essa entrevista" "s"; then
+if [ "$NO_LAUNCH" -eq 0 ] && confirma "  Chamo o ${CLI} agora para fazer essa entrevista" "s"; then
   cd "$DESTINO"
   say ""
   say "  ${VD}Passando o bastao para o ${CLI}...${R}"

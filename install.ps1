@@ -17,7 +17,8 @@ function Install-Cerebro {
         [switch]$DryRun,
         [string]$Dir = "",
         [string]$Cli = "",
-        [switch]$NoShortcut
+        [switch]$NoShortcut,
+        [switch]$NoLaunch
     )
 
     $ErrorActionPreference = "Stop"
@@ -470,7 +471,7 @@ function agente { Set-Location `$env:CEREBRO_DIR; & $cliEscolhido @args }
 
     $promptInicial = "Leia o arquivo BOOTSTRAP.md nesta pasta e execute o que esta escrito nele, do inicio ao fim. Fale comigo em portugues do Brasil."
 
-    if (Confirma "  Chamo o $cliEscolhido agora para fazer essa entrevista" "s") {
+    if ((-not $NoLaunch) -and (Confirma "  Chamo o $cliEscolhido agora para fazer essa entrevista" "s")) {
         Set-Location $destino
         Write-Host ""
         Write-Host "  Passando o bastao para o $cliEscolhido..." -ForegroundColor Green
