@@ -173,6 +173,24 @@ No Windows, baixe o `.ps1` e chame `Install-Cerebro -DryRun`.
 
 ---
 
+## Testando antes de confiar
+
+O repositório traz a própria bateria de testes. Ela roda **num `HOME` falso em
+`/tmp`** — não encosta na sua casa, no seu `.bashrc` nem no seu Cérebro de
+verdade:
+
+```bash
+bash testar.sh            # testa o install.sh desta pasta
+bash testar.sh --remoto   # testa o que está publicado agora no GitHub
+```
+
+São 27 verificações: instalação, estrutura criada, backup empacotando a pasta
+oculta, reinstalação sem destruir arquivo editado à mão, `--dry-run` sem
+escrever nada, o caso de não ter IA nenhuma e o fluxo interativo com terminal
+de verdade.
+
+---
+
 ## Como desinstalar
 
 Não tem desinstalador, porque não tem nada escondido:
