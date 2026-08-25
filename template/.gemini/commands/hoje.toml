@@ -1,0 +1,2 @@
+description = "O painel do dia — tarefas, atrasados e lembretes"
+prompt = "Execute a rotina descrita no arquivo 90-Sistema/rotinas/hoje.md deste projeto."

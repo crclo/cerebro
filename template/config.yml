@@ -1,0 +1,26 @@
+# config.yml — configuração do seu Cérebro
+# Nunca coloque senha, token ou chave aqui.
+
+usuario:
+  nome: ""              # como o agente te chama
+  ocupacao: ""          # 1 ou 2 frases sobre o que você faz
+  fuso: "America/Sao_Paulo"
+
+agente:
+  nome: ""              # o nome que você deu para ele
+  tom: ""               # direto | didatico | parceiro | (descreva do seu jeito)
+  idioma: "pt-BR"
+
+modulos:                # true para o que você usa
+  tarefas: true
+  lembretes: true
+  projetos: true
+  memoria: true
+  reunioes: false
+  estudos: false
+  financas: false
+  saude: false
+
+backup:
+  frequencia_sugerida: "semanal"
+  destino: "90-Sistema/backups/"

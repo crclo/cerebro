@@ -1,0 +1,2 @@
+description = "Processar a pasta INBOX"
+prompt = "Execute a rotina descrita no arquivo 90-Sistema/rotinas/inbox.md deste projeto."
