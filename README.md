@@ -1,5 +1,7 @@
 # 🧠 Cérebro
 
+[![Testes](https://github.com/crclo/cerebro/actions/workflows/testar.yml/badge.svg)](https://github.com/crclo/cerebro/actions/workflows/testar.yml)
+
 **Seu sistema pessoal, tocado pela IA que você já tem.**
 
 Se você já paga por **Claude Code**, **Codex CLI** ou **Gemini CLI**, você já tem
@@ -184,10 +186,14 @@ bash testar.sh            # testa o install.sh desta pasta
 bash testar.sh --remoto   # testa o que está publicado agora no GitHub
 ```
 
-São 27 verificações: instalação, estrutura criada, backup empacotando a pasta
-oculta, reinstalação sem destruir arquivo editado à mão, `--dry-run` sem
-escrever nada, o caso de não ter IA nenhuma e o fluxo interativo com terminal
-de verdade.
+São 28 verificações: instalação, estrutura criada, backup empacotando a pasta
+oculta, reinstalação sem destruir arquivo editado à mão, o atalho `agente`,
+`--dry-run` sem escrever nada, o caso de não ter IA nenhuma e o fluxo
+interativo com terminal de verdade.
+
+E a cada push isso roda sozinho **nos três sistemas de verdade** — Ubuntu,
+macOS e Windows — em máquinas do GitHub. O macOS está lá por um motivo
+específico: ele ainda vem com **bash 3.2**, que é onde script moderno quebra.
 
 ---
 

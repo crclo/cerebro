@@ -401,7 +401,8 @@ function Install-Cerebro {
             $marca | Set-Content -Path (Join-Path $destino ".cerebro-install.yml") -Encoding UTF8
         }
 
-        Ok "Estrutura criada em $destino"
+        if ($DryRun) { Write-Host "   [dry-run] aqui eu criaria a estrutura em $destino" -ForegroundColor DarkGray }
+        else { Ok "Estrutura criada em $destino" }
     }
     finally {
         Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue

@@ -479,7 +479,11 @@ if [ "$DRY_RUN" -eq 0 ]; then
   } > "$DESTINO/.cerebro-install.yml"
 fi
 
-ok "Estrutura criada em $DESTINO"
+if [ "$DRY_RUN" -eq 1 ]; then
+  say "   ${DIM}[dry-run] aqui eu criaria a estrutura em $DESTINO${R}"
+else
+  ok "Estrutura criada em $DESTINO"
+fi
 
 # Deixa os scripts de backup executaveis
 if [ -f "$DESTINO/90-Sistema/scripts/backup-cerebro.sh" ]; then run chmod +x "$DESTINO/90-Sistema/scripts/backup-cerebro.sh"; fi
