@@ -65,7 +65,9 @@ function Install-Cerebro {
     # ========================================================
     #  0. Abertura
     # ========================================================
-    Clear-Host
+    # Em automacao (CI, tarefa agendada) nao existe console de verdade e o
+    # Clear-Host estoura com "The handle is invalid". Limpar tela e cosmetico.
+    try { Clear-Host } catch {}
     Write-Host ""
     Write-Host "   ____   _____   ____   _____   ____   ____    ___ "
     Write-Host "  / ___| | ____| |  _ \ | ____| | __ ) |  _ \  / _ \"

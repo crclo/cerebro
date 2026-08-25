@@ -99,8 +99,26 @@ com_tty() {  # com_tty "comando shell" arquivo_de_saida
 }
 
 echo ""
-echo "== 6. Fluxo interativo com terminal de verdade =="
-if [ "$SABOR_SCRIPT" != "nenhum" ]; then
+echo "== 6. O atalho 'agente' =="
+H5="$(lar h5)"
+env HOME="$H5" bash -c "$ALVO --dir='$H5/Google Drive/Cerebro' --cli=claude --no-launch" >"$SANDBOX/6a.log" 2>&1 || true
+if grep -q 'agente()' "$H5/.bashrc"
+then res ok "criou a funcao no .bashrc"; else res x "criou a funcao no .bashrc"; fi
+if grep -q "CEREBRO_DIR=\"$H5/Google Drive/Cerebro\"" "$H5/.bashrc"
+then res ok "apontou para a pasta certa"; else res x "apontou para a pasta certa"; fi
+env HOME="$H5" bash -c "$ALVO --dir='$H5/Google Drive/Cerebro' --cli=codex --no-launch" >"$SANDBOX/6b.log" 2>&1 || true
+if [ "$(grep -c '>>> cerebro >>>' "$H5/.bashrc")" = "1" ]
+then res ok "reinstalar nao duplicou o bloco"; else res x "reinstalar nao duplicou o bloco"; fi
+if grep -q 'command codex' "$H5/.bashrc"
+then res ok "reinstalar atualizou a IA do atalho"; else res x "reinstalar atualizou a IA do atalho"; fi
+if ! ls -a "$H5" | grep -q 'cerebro-bak'
+then res ok "nao deixou arquivo de sobra"; else res x "nao deixou arquivo de sobra"; fi
+
+echo ""
+echo "== 7. Fluxo interativo com terminal de verdade =="
+# So roda quando existe um terminal real para herdar. Em CI nao existe, e o
+# "script" nao repassa o que vem por pipe - o instalador le de /dev/tty.
+if [ "$SABOR_SCRIPT" != "nenhum" ] && [ -t 0 ]; then
   H4="$(lar h4)"
   printf '\n1\n1\nCerebro\n\ns\nn\n' | com_tty "env HOME=$H4 bash -c \"$ALVO\"" "$SANDBOX/6.log" || true
   if [ -f "$H4/Google Drive/Cerebro/CLAUDE.md" ]
@@ -113,7 +131,7 @@ if [ "$SABOR_SCRIPT" != "nenhum" ]; then
   if ! ls -a "$H4" | grep -q 'cerebro-bak'
   then res ok "nao deixou arquivo de sobra"; else res x "nao deixou arquivo de sobra"; fi
 else
-  echo "  (pulado: nao ha um comando 'script' utilizavel nesta maquina)"
+  echo "  (pulado: precisa de um terminal de verdade - nao roda em CI)"
 fi
 
 echo ""
