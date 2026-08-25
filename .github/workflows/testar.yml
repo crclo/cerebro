@@ -147,7 +147,9 @@ jobs:
           Remove-Item "$env:USERPROFILE\bin\claude.cmd" -Force
           $env:CEREBRO_YES = "1"; $env:CEREBRO_CLI = ""
           $env:CEREBRO_DIR = "$env:RUNNER_TEMP\NaoUsa"
-          $saida = (.\install.ps1 | Out-String)
+          # Write-Host escreve no stream de informacao, nao no pipeline:
+          # sem o *>&1 a saida chega vazia e o teste acusa falso negativo.
+          $saida = (.\install.ps1 *>&1 | Out-String)
           if ($saida -notmatch "Nao encontrei nenhum agente") { throw "FALHOU: nao explicou" }
           if (Test-Path "$env:RUNNER_TEMP\NaoUsa") { throw "FALHOU: instalou mesmo sem IA" }
           Write-Host "PASSOU"
