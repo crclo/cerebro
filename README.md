@@ -26,6 +26,19 @@ curl -fsSL https://cesarcampos.com.br/cerebro | bash
 irm https://cesarcampos.com.br/cerebro.ps1 | iex
 ```
 
+<details>
+<summary>Prefere o endereço direto do GitHub, sem passar pelo domínio?</summary>
+
+```bash
+# Linux e macOS
+curl -fsSL https://raw.githubusercontent.com/crclo/cerebro/main/install.sh | bash
+```
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/crclo/cerebro/main/install.ps1 | iex
+```
+</details>
+
 ### Prefere ler antes de rodar? Faça isso. Sempre.
 
 ```bash
@@ -33,6 +46,9 @@ curl -fsSL https://cesarcampos.com.br/cerebro -o instalar.sh
 less instalar.sh          # leia com calma
 bash instalar.sh
 ```
+
+> São **menos de 500 linhas de bash**, comentadas em português. Vale os dois
+> minutos de leitura — em qualquer script que peça para rodar na sua máquina.
 
 Ou veja o que aconteceria, sem escrever nada no disco:
 

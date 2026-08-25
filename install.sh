@@ -13,7 +13,9 @@
 #  Leia antes de rodar. Serio. Sempre.
 # ============================================================
 
-set -euo pipefail
+# Sem "set -u" de proposito: o macOS ainda vem com bash 3.2, onde expandir
+# array vazio sob -u derruba o script. Preferimos proteger cada variavel.
+set -eo pipefail
 
 REPO_USER="crclo"
 REPO_NAME="cerebro"
@@ -49,8 +51,10 @@ die() { err "$*"; exit 1; }
 # Leitura do teclado mesmo rodando via "curl | bash"
 # (nesse caso o stdin e o proprio script, entao usamos /dev/tty)
 # ------------------------------------------------------------
+# Nao basta o /dev/tty existir: precisa ser possivel ABRIR ele.
+# (rodando por ssh sem tty, cron ou dentro de outro pipe, existe mas nao abre)
 TTY_OK=0
-if [ -r /dev/tty ]; then TTY_OK=1; fi
+if { : < /dev/tty; } 2>/dev/null; then TTY_OK=1; fi
 
 ask() {  # ask "pergunta" "padrao" -> ecoa resposta
   local prompt="$1" padrao="${2:-}" resposta=""
@@ -61,7 +65,7 @@ ask() {  # ask "pergunta" "padrao" -> ecoa resposta
     printf '%s%s%s: ' "$B" "$prompt" "$R" > /dev/tty
   fi
   IFS= read -r resposta < /dev/tty || true
-  [ -z "$resposta" ] && resposta="$padrao"
+  if [ -z "$resposta" ]; then resposta="$padrao"; fi
   printf '%s' "$resposta"
 }
 
@@ -72,7 +76,7 @@ confirma() {  # confirma "pergunta" "s|n"  -> retorna 0 para sim
 }
 
 pausa() {
-  [ "$TTY_OK" -eq 0 ] && return 0
+  if [ "$TTY_OK" -eq 0 ]; then return 0; fi
   printf '\n%s   ... ENTER para continuar%s' "$DIM" "$R" > /dev/tty
   IFS= read -r _ < /dev/tty || true
   printf '\n' > /dev/tty
@@ -163,7 +167,7 @@ cat <<TEXTO
   Sem assinatura nova. Sem banco de dados. Sem nuvem de ninguem.
 
 TEXTO
-[ "$DRY_RUN" -eq 1 ] && warn "MODO SIMULACAO: nada sera escrito no disco."
+if [ "$DRY_RUN" -eq 1 ]; then warn "MODO SIMULACAO: nada sera escrito no disco."; fi
 pausa
 
 # ============================================================
@@ -196,13 +200,9 @@ done
 step "2/6  Procurando um agente de IA instalado"
 
 TEM_CLAUDE=0; TEM_CODEX=0; TEM_GEMINI=0
-command -v claude >/dev/null 2>&1 && TEM_CLAUDE=1
-command -v codex  >/dev/null 2>&1 && TEM_CODEX=1
-command -v gemini >/dev/null 2>&1 && TEM_GEMINI=1
-
-[ "$TEM_CLAUDE" -eq 1 ] && ok "Claude Code   encontrado  ($(command -v claude))"
-[ "$TEM_CODEX"  -eq 1 ] && ok "Codex CLI     encontrado  ($(command -v codex))"
-[ "$TEM_GEMINI" -eq 1 ] && ok "Gemini CLI    encontrado  ($(command -v gemini))"
+if command -v claude >/dev/null 2>&1; then TEM_CLAUDE=1; ok "Claude Code   encontrado  ($(command -v claude))"; fi
+if command -v codex  >/dev/null 2>&1; then TEM_CODEX=1;  ok "Codex CLI     encontrado  ($(command -v codex))"; fi
+if command -v gemini >/dev/null 2>&1; then TEM_GEMINI=1; ok "Gemini CLI    encontrado  ($(command -v gemini))"; fi
 
 TOTAL=$((TEM_CLAUDE + TEM_CODEX + TEM_GEMINI))
 
@@ -240,9 +240,9 @@ CLI=""
 if [ -n "$ARG_CLI" ]; then
   CLI="$ARG_CLI"
 elif [ "$TOTAL" -eq 1 ]; then
-  [ "$TEM_CLAUDE" -eq 1 ] && CLI="claude"
-  [ "$TEM_CODEX"  -eq 1 ] && CLI="codex"
-  [ "$TEM_GEMINI" -eq 1 ] && CLI="gemini"
+  if [ "$TEM_CLAUDE" -eq 1 ]; then CLI="claude"; fi
+  if [ "$TEM_CODEX"  -eq 1 ]; then CLI="codex";  fi
+  if [ "$TEM_GEMINI" -eq 1 ]; then CLI="gemini"; fi
   say ""
   ok "Vou usar o ${B}${CLI}${R} - e o unico que voce tem por aqui."
 else
@@ -251,9 +251,9 @@ else
   say ""
   n=0
   OP1=""; OP2=""; OP3=""
-  [ "$TEM_CLAUDE" -eq 1 ] && { n=$((n+1)); eval "OP$n=claude"; say "    $n) Claude Code"; }
-  [ "$TEM_CODEX"  -eq 1 ] && { n=$((n+1)); eval "OP$n=codex";  say "    $n) Codex CLI"; }
-  [ "$TEM_GEMINI" -eq 1 ] && { n=$((n+1)); eval "OP$n=gemini"; say "    $n) Gemini CLI"; }
+  if [ "$TEM_CLAUDE" -eq 1 ]; then n=$((n+1)); eval "OP$n=claude"; say "    $n) Claude Code"; fi
+  if [ "$TEM_CODEX"  -eq 1 ]; then n=$((n+1)); eval "OP$n=codex";  say "    $n) Codex CLI";  fi
+  if [ "$TEM_GEMINI" -eq 1 ]; then n=$((n+1)); eval "OP$n=gemini"; say "    $n) Gemini CLI"; fi
   say ""
   esc="$(ask "  Numero" "1")"
   case "$esc" in 1) CLI="$OP1" ;; 2) CLI="$OP2" ;; 3) CLI="$OP3" ;; *) CLI="$OP1" ;; esac
@@ -276,7 +276,7 @@ step "3/6  Escolhendo onde o seu Cerebro vai morar"
 
 # Detecta pastas de sincronizacao na nuvem
 CANDIDATOS=()
-adiciona() { [ -d "$1" ] && CANDIDATOS+=("$1"); }
+adiciona() { if [ -d "$1" ]; then CANDIDATOS+=("$1"); fi; return 0; }
 
 if [ "$SO" = "macos" ]; then
   for d in "$HOME"/Library/CloudStorage/GoogleDrive-*/Meu\ Drive "$HOME"/Library/CloudStorage/GoogleDrive-*/My\ Drive; do adiciona "$d"; done
@@ -325,10 +325,10 @@ TEXTO
     else
       idx=1
       for c in "${CANDIDATOS[@]}"; do
-        [ "$idx" = "$esc" ] && BASE="$c"
+        if [ "$idx" = "$esc" ]; then BASE="$c"; fi
         idx=$((idx+1))
       done
-      [ -z "$BASE" ] && BASE="${CANDIDATOS[0]}"
+      if [ -z "$BASE" ]; then BASE="${CANDIDATOS[0]}"; fi
     fi
   else
     warn "Nao achei pasta de nuvem automaticamente."
@@ -465,7 +465,7 @@ copia "$FONTE" "$DESTINO"
 
 # BOOTSTRAP.md fica na raiz: e o roteiro da entrevista
 BOOT="$TMP/${REPO_NAME}-${REPO_BRANCH}/BOOTSTRAP.md"
-[ -f "$BOOT" ] && run cp "$BOOT" "$DESTINO/BOOTSTRAP.md"
+if [ -f "$BOOT" ]; then run cp "$BOOT" "$DESTINO/BOOTSTRAP.md"; fi
 
 # Marca de que a pasta esta em nuvem (o agente le isso na entrevista)
 if [ "$DRY_RUN" -eq 0 ]; then
@@ -482,7 +482,7 @@ fi
 ok "Estrutura criada em $DESTINO"
 
 # Deixa os scripts de backup executaveis
-[ -f "$DESTINO/90-Sistema/scripts/backup-cerebro.sh" ] && run chmod +x "$DESTINO/90-Sistema/scripts/backup-cerebro.sh"
+if [ -f "$DESTINO/90-Sistema/scripts/backup-cerebro.sh" ]; then run chmod +x "$DESTINO/90-Sistema/scripts/backup-cerebro.sh"; fi
 
 # ============================================================
 #  6. O atalho "agente"
